@@ -1,0 +1,9 @@
+caremu.o: caremu.c caremu.h gpu.h maps.h libtca/vector.h \
+ libtca/hashtable.h input.h cars.h
+gpu.o: gpu.c caremu.h cars.h maps.h libtca/vector.h libtca/hashtable.h \
+ gpu.h input.h
+cars.o: cars.c gpu.h maps.h libtca/vector.h libtca/hashtable.h caremu.h \
+ cars.h
+maps.o: maps.c maps.h libtca/vector.h libtca/hashtable.h
+input.o: input.c caremu.h gpu.h maps.h libtca/vector.h libtca/hashtable.h \
+ input.h
