@@ -20,6 +20,8 @@ struct ui {
 	struct car *selected_car;
 };
 
+struct game;
+
 struct graphics *init_graphics();
 void graphics_render(struct game *, struct graphics *);
 void graphics_update(struct game *, struct graphics *);

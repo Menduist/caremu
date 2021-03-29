@@ -25,7 +25,6 @@ libtca/libtca.a: libtca
 	make -C libtca
 
 clean:
-	rm $(OBJS)
 
 fclean: clean
 	rm $(NAME)

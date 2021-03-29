@@ -136,61 +136,10 @@ void draw_map(sfRenderWindow *win, struct map *map) {
 	static sfVertexArray *arr = NULL;
 	if (!arr) arr = create_map_vertex(map);
 	sfRenderWindow_drawVertexArray(win, arr, NULL);
-/*
-	float pixel_per_meters = 55;
-	float meters_per_lane = 3;
-	float ratio = 111111 * pixel_per_meters;
-	float xoffset = (map->max_x - map->min_x) / 2;
-	float yoffset = (map->max_y - map->min_y) / 2;
-
-	unsigned int i = 0;
-	sfRectangleShape *rect = sfRectangleShape_create();
-	sfRectangleShape_setSize(rect, (sfVector2f){1, 1});
-	sfRectangleShape_setOrigin(rect, (sfVector2f){0.5, 0.5});
-
-	sfCircleShape *circle = sfCircleShape_create();
-	sfCircleShape_setRadius(circle, 0.5);
-	sfCircleShape_setOrigin(circle, (sfVector2f){0.5, 0.5});
-	while (i < map->ways.current) {
-		struct way *way = map->ways.data[i];
-		if (way->type == UNKNOWN) {
-			i++;
-			continue;
-		}
-		unsigned int y = 1;
-		if (way->type == RIVER) {
-			sfRectangleShape_setFillColor(rect, sfBlue);
-			sfCircleShape_setFillColor(circle, sfBlue);
-		} else {
-			sfRectangleShape_setFillColor(rect, sfYellow);
-			sfCircleShape_setFillColor(circle, sfYellow);
-		}
-		while (y < way->nodes.current) {
-			struct node *last_node = way->nodes.data[y - 1];
-			struct node *node = way->nodes.data[y];
-			sfVector2f node_pos = {(node->x - map->min_x - xoffset) * ratio, (node->y - map->min_y - yoffset) * ratio};
-			sfVector2f last_node_pos = {(last_node->x - map->min_x - xoffset) * ratio, (last_node->y - map->min_y - yoffset) * ratio};
-
-			float distance = sqrt((node_pos.x - last_node_pos.x) * (node_pos.x - last_node_pos.x) + (node_pos.y - last_node_pos.y) * (node_pos.y - last_node_pos.y));
-			sfRectangleShape_setScale(rect, (sfVector2f){meters_per_lane * way->lane_count * pixel_per_meters, distance});
-			sfRectangleShape_setPosition(rect, (sfVector2f){(node_pos.x + last_node_pos.x) / 2.0, (node_pos.y + last_node_pos.y) / 2.0});
-			sfRectangleShape_setRotation(rect, atan2(node_pos.y - last_node_pos.y, node_pos.x - last_node_pos.x) / 3.14159265359 * 180.0 + 90);
-
-			//sfRenderWindow_drawRectangleShape(win, rect, NULL);
-			if (y != way->nodes.current - 1) {
-				sfCircleShape_setScale(circle, (sfVector2f){meters_per_lane * way->lane_count * pixel_per_meters, meters_per_lane * way->lane_count * pixel_per_meters});
-				sfCircleShape_setPosition(circle, node_pos);
-				//sfRenderWindow_drawCircleShape(win, circle, NULL);
-			}
-			y++;
-		}
-		i++;
-	}
-*/
 }
 
 static void map_center_and_scale(struct map *map) {
-	float ratio = 111111 * pixel_per_meters;
+	float ratio = pixel_per_meters;
 	float meanx = 0;
 	float meany = 0;
 	int node_count = 0;
@@ -213,10 +162,10 @@ static void map_center_and_scale(struct map *map) {
 		i++;
 	}
 
-	//float xoffset = (map->max_x - map->min_x) / 2;
-	//float yoffset = (map->max_y - map->min_y) / 2;
 	float xoffset = (meanx);
 	float yoffset = (meany);
+
+	printf("%f, %f\n", xoffset, yoffset);
 
 
 	i = 0;
@@ -225,7 +174,7 @@ static void map_center_and_scale(struct map *map) {
 		while (ptr && ptr->used) {
 			struct node *node = ptr->value;
 			node->x = (node->x - xoffset) * ratio;
-			node->y = (node->y - yoffset) * ratio;
+			node->y = (node->y - yoffset) * ratio * -1;
 			ptr = ptr->next;
 		}
 		i++;
@@ -371,9 +320,9 @@ static void map_build_all_ways(struct map *map) {
 		}
 		unsigned int z = 0;
 		while (z < way->nodes.current) {
-			struct node *node = way->nodes.data[z];
+			//struct node *node = way->nodes.data[z];
+			//node->paths = get_way(node); TODO
 			node_done++;
-			//node->paths = get_way(node);
 			z++;
 		}
 		printf("%d/%d\n", node_done, node_count);
@@ -395,8 +344,8 @@ struct map *map_parse_xml(char *path) {
 	result->nodes = create_hashtable(65536);
 	vector_init(&result->ways);
 
-	result->min_x = result->min_y = 10000;
-	result->max_x = result->max_y = -10000;
+	result->min_x = result->min_y = 1000000;
+	result->max_x = result->max_y = -1000000;
 
 	xmlDoc *doc = NULL;
 	xmlNode *root_element = NULL;
@@ -417,11 +366,17 @@ struct map *map_parse_xml(char *path) {
 				node->latitude = atof(get_attr(it, "lat"));
 				node->longitude = atof(get_attr(it, "lon"));
 
-				float earth_diameter = 6372 * cos(node->latitude/180*3.14159265359) * 2;
-				float earth_circumference = earth_diameter * 3.14159265359;
-				float earth_circumference_at_equator = 40075.017;
-				node->y = -node->latitude;
-				node->x = node->longitude / (earth_circumference_at_equator / earth_circumference);
+				//Old lat-long => x-y
+				//float earth_diameter = 6372 * cos(node->latitude/180*3.14159265359) * 2;
+				//float earth_circumference = earth_diameter * 3.14159265359;
+				//float earth_circumference_at_equator = 40075.017;
+				//node->y = -node->latitude;
+				//node->x = node->longitude / (earth_circumference_at_equator / earth_circumference);
+
+				//New lat-long => x-y (Mercator)
+				float r_major = 6378137.000;
+				node->x = r_major * (node->longitude * 0.0174533);
+				node->y = 180.0 / 3.14159265359 * log(tan(3.14159265359 / 4.0 + node->latitude * (3.14159265359 / 180.0) / 2.0)) * (node->x / node->longitude);
 
 				if (node->x > result->max_x) result->max_x = node->x;
 				if (node->x < result->min_x) result->min_x = node->x;

@@ -18,12 +18,11 @@ void sig_handler(int signo)
 int init_display();
 
 static void init_cars(struct game *game) {
-	game->cars_count = 4000;
 	game->cars = calloc(game->cars_count, sizeof(struct car));
 	int i = 0;
 	while (i < game->cars_count) {
 		game->cars[i].target = car_ia_get_random_node(game->map);
-		game->cars[i].x = game->cars[i].target->x + 1 * i;
+		game->cars[i].x = game->cars[i].target->x + 3 * i;
 		game->cars[i].y = game->cars[i].target->y;
 		game->cars[i].control = CAR_CONTROL_IA;
 		i++;
@@ -41,9 +40,28 @@ static void update_cars(struct game *game) {
 int main(int argc, char **argv)
 {
 	struct game game;
+	char *target_map = strdup("maps/paris");
+
+	game.cars_count = 4000;
+	int opt;
+	while ((opt = getopt(argc, argv, "m:c:")) != -1) {
+		switch (opt) {
+		case 'm':
+			free(target_map);
+			target_map = strdup(optarg);
+			break;
+		case 'c':
+			game.cars_count = atoi(optarg);
+			break;
+		default:
+			printf("Usage: %s [-m osm map file path (default %s)] [-c cars count (default %d)]\n",
+				argv[0], target_map, game.cars_count);
+			return -1;
+		}
+	}
 	game.graphics = init_graphics();
 	game.inputs = calloc(1, sizeof(struct inputs));
-	game.map = map_parse_xml("maps/fresno");
+	game.map = map_parse_xml(target_map);
 	game.speed = 1;
 	init_cars(&game);
 
@@ -56,6 +74,4 @@ int main(int argc, char **argv)
 		update_cars(&game);
 		graphics_render(&game, game.graphics);
 	}
-	(void)argc;
-	(void)argv;
 }

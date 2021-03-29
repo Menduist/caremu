@@ -18,12 +18,11 @@ struct graphics *init_graphics()
 	memset(&settings, 0, sizeof(settings));
 	settings.antialiasingLevel = 16;
 
-	sfRenderWindow *window;
 	result->window = sfRenderWindow_create(mode, "Caremu", sfResize | sfClose, &settings);
 
 	sfRenderWindow_setFramerateLimit(result->window, 0);
 
-	sfFloatRect visibleArea = {0.f, 0.f, 1280, 720};
+	sfFloatRect visibleArea = {0.f, 0.f, 1280 * 10, 720 * 10};
 	result->game_view = sfView_createFromRect(visibleArea);
 	result->ui_view = sfView_createFromRect(visibleArea);
 	result->font = sfFont_createFromFile("sansation.ttf");
@@ -73,6 +72,7 @@ void graphics_update(struct game *game, struct graphics *graphics) {
 }
 
 int graphics_is_in_viewport(struct graphics *graphics, sfVector2f position, int size) {
+	(void)size; //TODO use size
 	return sfFloatRect_contains(&graphics->viewport, position.x, position.y);
 }
 

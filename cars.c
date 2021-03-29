@@ -84,7 +84,7 @@ static struct vector *get_way(struct car *car, struct node *start, struct node *
 			}
 		}
 	}
-	printf("No way:( %d\n", closed_set->current);
+	printf("Car stuck %ld, teleporting\n", closed_set->current);
 	return NULL;
 }
 
@@ -135,10 +135,13 @@ static void car_ia(struct map *map, struct car *car) {
 }
 
 static void car_keyboard(struct map *map, struct car *car) {
-
+	(void)map;
+	(void)car;
+	//TODO
 }
 
 void update_car(struct game *game, struct map *map, struct car *car, double time) {
+	(void)game;
 	if (car->control == CAR_CONTROL_IA) car_ia(map, car);
 	else if (car->control == CAR_CONTROL_KEYBOARD) car_keyboard(map, car);
 
